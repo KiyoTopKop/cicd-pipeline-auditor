@@ -1,0 +1,27 @@
+name: PipeLint Self-Audit
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    name: Security Scan (PipeLint)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Self-Audit Workflows
+        run: npx tsx src/engine/cli.ts .github/workflows --fail-on critical

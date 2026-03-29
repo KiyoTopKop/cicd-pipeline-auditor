@@ -1,0 +1,112 @@
+# Intentionally Vulnerable Workflow — PipeLint Demo
+# This workflow contains multiple real-world security issues for demonstration.
+# DO NOT use this in production.
+
+name: Build and Deploy
+
+on:
+  pull_request_target:
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      environment:
+        type: string
+        description: 'Target environment'
+
+# PM-002: write-all permissions at workflow level
+permissions: write-all
+
+jobs:
+  build:
+    # EE-001: self-hosted runner without isolation docs
+    runs-on: self-hosted
+
+    # EE-003: mutable Docker container tag
+    container:
+      image: node:20-alpine
+
+    steps:
+      # SC-001: mutable action tag @v3 instead of SHA
+      - uses: actions/checkout@v3
+        with:
+          # TR-001: checking out PR head in pull_request_target context
+          ref: ${{ github.event.pull_request.head.sha }}
+
+      # SC-001: another mutable action tag
+      - uses: actions/setup-node@v3
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: npm ci
+
+      # CI-001: command injection via untrusted PR title
+      - name: Print PR info
+        run: |
+          echo "Building PR: ${{ github.event.pull_request.title }}"
+          echo "Branch: ${{ github.head_ref }}"
+
+      # SE-004: hardcoded API key (CRITICAL)
+      - name: Configure API
+        env:
+          DATABASE_URL: postgresql://admin:SuperSecret123!@db.internal.com/prod
+          API_KEY: sk-9f8e7d6c5b4a3f2e1d0c9b8a7f6e5d4c3b2a1f0e
+
+      # EE-002: curl piped to bash without checksum
+      - name: Install tools
+        run: |
+          curl -fsSL https://get.helm.sh/helm-install.sh | bash
+          wget https://raw.githubusercontent.com/tools/installer/main/install.sh | sh
+
+      - name: Run tests
+        run: npm test
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: build
+
+    steps:
+      - uses: actions/checkout@v3
+
+      # SE-001: secret passed to run: block with outbound network call
+      - name: Deploy application
+        env:
+          DEPLOY_TOKEN: ${{ secrets.DEPLOY_TOKEN }}
+          AWS_SECRET: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        run: |
+          curl -X POST https://deploy.example.com/deploy \
+            -H "Authorization: Bearer $DEPLOY_TOKEN" \
+            -d '{"env": "production"}'
+
+      # SE-002: secret echoed to stdout
+      - name: Debug credentials
+        run: echo "Using token: ${{ secrets.GITHUB_TOKEN }}"
+
+      # SE-003: secret passed as Docker build arg
+      - name: Build Docker image
+        run: docker build --build-arg API_KEY=${{ secrets.API_KEY }} -t myapp:latest .
+
+      # EE-004: Docker socket mount
+      - name: Run with Docker
+        run: docker run --privileged -v /var/run/docker.sock:/var/run/docker.sock myapp:latest
+
+      # EE-005: continue-on-error on security scan
+      - name: Security audit
+        continue-on-error: true
+        run: npm audit --audit-level=critical
+
+      # SE-006: secrets: inherit in reusable workflow
+  notify:
+    uses: ./.github/workflows/notify.yml
+    secrets: inherit
+
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      # EE-006: binary downloaded without verification
+      - name: Install release tool
+        run: |
+          wget https://github.com/goreleaser/goreleaser/releases/download/v1.24.0/goreleaser_Linux_x86_64.tar.gz
+          tar -xzf goreleaser_Linux_x86_64.tar.gz
+          sudo mv goreleaser /usr/local/bin/

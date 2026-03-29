@@ -1,0 +1,33 @@
+name: 'PipeLint CI/CD Auditor'
+description: 'Security analysis for GitHub Actions workflows (Supply Chain, Secrets, Injection)'
+author: 'KiyoTopKop'
+branding:
+  icon: 'shield'
+  color: 'blue'
+
+inputs:
+  path:
+    description: 'Path to scan (file or directory)'
+    default: '.github/workflows'
+    required: false
+  fail-on:
+    description: 'Minimum severity to fail the build (critical, high, medium, low)'
+    default: 'critical'
+    required: false
+  format:
+    description: 'Output format (text, json, sarif)'
+    default: 'text'
+    required: false
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+
+    - name: Run PipeLint
+      run: |
+        node ${{ github.action_path }}/dist/cli.js ${{ inputs.path }} --fail-on ${{ inputs.fail-on }} --format ${{ inputs.format }}
+      shell: bash

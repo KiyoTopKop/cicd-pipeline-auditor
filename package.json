@@ -1,0 +1,61 @@
+{
+  "name": "cicd-pipeline-auditor",
+  "version": "1.0.0",
+  "type": "module",
+  "main": "./dist/cli.js",
+  "bin": {
+    "pipelint": "./dist/cli.js"
+  },
+  "description": "PipeLint — Professional Security Auditor for GitHub Actions (Supply Chain, Secrets, Injection)",
+  "keywords": [
+    "github-actions",
+    "security-scanner",
+    "ci-cd",
+    "audit",
+    "static-analysis",
+    "supply-chain-security",
+    "secret-scanning",
+    "devops-security"
+  ],
+  "author": "KiyoTopKop",
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/KiyoTopKop/pipelint.git"
+  },
+  "bugs": {
+    "url": "https://github.com/KiyoTopKop/pipelint/issues"
+  },
+  "homepage": "https://KiyoTopKop.github.io/pipelint",
+  "scripts": {
+    "pipelint": "tsx src/engine/cli.ts",
+    "dev": "vite",
+    "build:web": "vite build",
+    "build:cli": "esbuild src/engine/cli.ts --bundle --platform=node --format=esm --outfile=dist/cli.js --banner:js=\"#!/usr/bin/env node\"",
+    "build": "npm run build:cli && npm run build:web",
+    "preview": "vite preview"
+  },
+  "files": [
+    "dist/cli.js",
+    "README.md",
+    "LICENSE",
+    "action.yml"
+  ],
+  "dependencies": {
+    "@monaco-editor/react": "^4.6.0",
+    "framer-motion": "^12.38.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "yaml": "^2.7.0"
+  },
+  "devDependencies": {
+    "@types/node": "^25.5.0",
+    "@types/react": "^18.3.20",
+    "@types/react-dom": "^18.3.5",
+    "@vitejs/plugin-react": "^4.3.4",
+    "esbuild": "^0.27.4",
+    "tsx": "^4.19.3",
+    "typescript": "^5.7.3",
+    "vite": "^6.2.3"
+  }
+}

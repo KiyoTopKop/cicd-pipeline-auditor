@@ -1,0 +1,13 @@
+name: Vulnerable PR Workflow
+on:
+  pull_request:
+
+permissions:
+  id-token: write # PM-006: CRITICAL
+
+jobs:
+  exploit:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Unsafe sudo
+        run: sudo echo "${{ github.event.pull_request.title }}" # CI-005: HIGH
