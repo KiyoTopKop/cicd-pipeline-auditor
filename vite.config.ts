@@ -3,7 +3,7 @@ import react from '@vitejs/plugin-react'
 
 export default defineConfig({
   plugins: [react()],
-  base: '/pipelint/',
+  base: '/cicd-pipeline-auditor/',
   server: {
     port: 8081,
     host: '0.0.0.0'
