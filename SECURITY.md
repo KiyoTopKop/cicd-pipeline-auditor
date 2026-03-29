@@ -4,7 +4,7 @@
 
 We take the security of PipeLint seriously. If you believe you've found a security vulnerability in our tool, please do **not** report it via a public issue. 
 
-Instead, please send an email to: **security@kiyotopkop.com** (replace with your actual email).
+Instead, please send an email to: **kiyotopkopy@gmail.com**
 
 We will acknowledge your report within 48 hours and provide a timeline for fixes.
 
